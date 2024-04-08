@@ -1,6 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 import { ProductType } from '../types/product.type';
+import { CreateProductDto } from '../dto/createProduct.dto';
+
 @Controller('product')
 export class ProductController {
 
@@ -8,6 +10,7 @@ export class ProductController {
 
   products: ProductType[] = []
 
+  @Get('')
   public index() {
     return this.productService.index();
   }
@@ -20,15 +23,17 @@ export class ProductController {
     return this.productService.findProductById(id)
   }
 
-  public createProduct(product: ProductType) {
-    return this.productService.createProduct(product);
+  @Post()
+  public createProduct(@Body() createProductDto: CreateProductDto) {
+    console.log(createProductDto);
+    return this.productService.createProduct(createProductDto);
   }
 
   public removeProduct(id: number) {
     return this.productService.removeProduct(id)
   }
 
-  public updateProduct(id: number, product: ProductType) {
+  public updateProduct(id: number, product: CreateProductDto) {
     return this.productService.updateProduct(id, product)
   }
 

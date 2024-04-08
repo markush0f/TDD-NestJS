@@ -2,25 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductController } from './product.controller';
 import { ProductService } from '../services/product.service';
 import { ProductType } from '../types/product.type';
-
+import { CreateProductDto } from '../dto/createProduct.dto';
 
 describe('ProductController', () => {
-  const products: ProductType[] = [
+  const products: CreateProductDto[] = [
     {
       id: 1,
       name: "Coca-Cola",
       price: 2
-    },
+    } as CreateProductDto,
     {
       id: 2,
       name: "Lays",
       price: 5
-    },
+    } as CreateProductDto,
     {
       id: 3,
       name: "Ketchup",
       price: 4
-    },
+    } as CreateProductDto,
   ]
 
   let productController: ProductController;
@@ -52,7 +52,7 @@ describe('ProductController', () => {
 
   describe('listProducts', () => {
     it("should return a list of products", () => {
-      const productsMocked: ProductType[] = [...products]
+      const productsMocked: CreateProductDto[] = products
       jest.spyOn(productService, 'listProducts').mockReturnValue(productsMocked);
       expect(productController.listProducts()).toEqual(productsMocked);
     })
@@ -60,11 +60,10 @@ describe('ProductController', () => {
 
   describe('findProductById', () => {
     it("should return a product by id", () => {
-      const productMocked: ProductType = products[0]
+      const productMocked: CreateProductDto = products[0]
 
       jest.spyOn(productService, 'findProductById').mockReturnValue(productMocked)
       const result = productController.findProductById(productMocked.id)
-
       expect(result).toBe(productMocked)
       expect(productService.findProductById).toHaveBeenCalledWith(productMocked.id)
       expect(productController.findProductById(productMocked.id)).toEqual(productMocked)
@@ -74,19 +73,19 @@ describe('ProductController', () => {
 
   describe('createProduct', () => {
     it("should create a product and return a product", () => {
-      const productCreated: ProductType = {
+      const productCreated: CreateProductDto = {
         id: 5,
         name: "Fanta",
-        price: 2.4
+        price: 2.4,
+        quantity: 12
       }
 
       jest.spyOn(productService, 'createProduct').mockReturnValue(productCreated);
-
       const result = productController.createProduct(productCreated)
       expect(productService.createProduct).toHaveBeenCalledWith(productCreated)
       expect(productService.createProduct).toHaveBeenCalledTimes(1)
       expect(result).toEqual(productCreated)
-   
+
     })
   })
 
