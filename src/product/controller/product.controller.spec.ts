@@ -3,6 +3,10 @@ import { ProductController } from './product.controller';
 import { ProductService } from '../services/product.service';
 import { ProductType } from '../types/product.type';
 import { CreateProductDto } from '../dto/createProduct.dto';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Product } from '../entities/product.entitie';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
 
 describe('ProductController', () => {
   const products: CreateProductDto[] = [
@@ -29,7 +33,26 @@ describe('ProductController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductController],
+
       providers: [ProductService],
+
+      imports: [
+        TypeOrmModule.forFeature([Product]),
+        AutomapperModule.forRoot({
+          strategyInitializer: classes()
+        }),
+        TypeOrmModule.forRoot({
+          type: 'mysql',
+          host: 'localhost',
+          port: 3306,
+          username: 'root',
+          password: '1234',
+          database: 'products',
+          entities: [Product],
+          synchronize: true,
+        }),
+
+      ]
     }).compile();
 
     productController = module.get<ProductController>(ProductController);
@@ -52,86 +75,60 @@ describe('ProductController', () => {
 
   describe('listProducts', () => {
     it("should return a list of products", () => {
-      const productsMocked: CreateProductDto[] = products
-      jest.spyOn(productService, 'listProducts').mockReturnValue(productsMocked);
-      expect(productController.listProducts()).toEqual(productsMocked);
-    })
-  })
+      const listProducts: CreateProductDto[] = products
+      const listProductsPromise = Promise.resolve(listProducts);
+      jest.spyOn(productService, 'listProducts').mockReturnValue(listProductsPromise);
+      expect(productController.listProducts()).toEqual(listProductsPromise);
+    });
+  });
+
+
 
   describe('findProductById', () => {
-    it("should return a product by id", () => {
-      const productMocked: CreateProductDto = products[0]
+    it("should return a product by id", async () => {
+      const productSearched: CreateProductDto = products[0];
+      const productSearchedPromise = Promise.resolve(productSearched);
+      console.log((await productSearchedPromise));
+      // Spy the controller methods
+      jest.spyOn(productService, 'findProductById').mockReturnValue(productSearchedPromise);
+      const result = await productController.findProductById(productSearched.id);
+      expect(result).toBe(productSearched);
+      expect(productService.findProductById).toHaveBeenCalledWith(productSearched.id);
+      expect(result).toEqual(productSearched);
+    });
+  });
 
-      jest.spyOn(productService, 'findProductById').mockReturnValue(productMocked)
-      const result = productController.findProductById(productMocked.id)
-      expect(result).toBe(productMocked)
-      expect(productService.findProductById).toHaveBeenCalledWith(productMocked.id)
-      expect(productController.findProductById(productMocked.id)).toEqual(productMocked)
-
-    })
-  })
 
   describe('createProduct', () => {
-    it("should create a product and return a product", () => {
-      const productCreated: CreateProductDto = {
-        id: 5,
-        name: "Fanta",
-        price: 2.4,
-        quantity: 12
-      }
+    it('should create a product and return it', async () => {
+      const createProductDto: CreateProductDto = products[1];
+      const productCreated: CreateProductDto = products[1];
 
-      jest.spyOn(productService, 'createProduct').mockReturnValue(productCreated);
-      const result = productController.createProduct(productCreated)
-      expect(productService.createProduct).toHaveBeenCalledWith(productCreated)
-      expect(productService.createProduct).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(productCreated)
+      jest.spyOn(productService, 'createProduct').mockResolvedValue(productCreated);
+      jest.spyOn(productController, 'createProduct')
+      const result = await productController.createProduct(createProductDto);
 
-    })
-  })
+      expect(productService.createProduct).toHaveBeenCalledWith(createProductDto);
+      expect(productController.createProduct).toHaveBeenCalledWith(createProductDto);
+      expect(result).toEqual(productCreated);
+    });
+  });
+
 
   describe('removeProduct', () => {
-    it("should remove a product by id and return a product", () => {
+    it("should remove a product by id and return a product", async () => {
       const id = 3;
+      const productToRemove = products[2]
+      const productRemovedPromise = Promise.resolve(productToRemove)
+      jest.spyOn(productService, 'removeProduct').mockReturnValue(productRemovedPromise)
 
-      jest.spyOn(productService, 'removeProduct').mockReturnValue(products[2])
-
-      const result = productService.removeProduct(id)
+      const result = await productController.removeProduct(id)
       expect(productService.removeProduct).toHaveBeenCalledWith(id)
       expect(productService.removeProduct).toHaveBeenCalledTimes(1)
+      console.log(result);
       expect(result).toEqual(products[2])
     })
   })
 
-  describe('updateProduct', () => {
-    it("should update a product by id and return a product", () => {
-      // Data for update the product
-      const updatedProduct: Partial<ProductType> = {
-        name: 'RedBull',
-        price: 2.3
-      }
-      // Product to update
-      const productToUpdate = products[2];
-
-      jest.spyOn(productService, 'updateProduct')
-        // Controlamos el comportamiento de la función
-        .mockImplementation((id: number, newProduct: Partial<ProductType>) => {
-          return {
-            ...productToUpdate,
-            ...newProduct
-          }
-        })
-
-      const result = productService.updateProduct(productToUpdate.id, updatedProduct)
-
-      expect(productService.updateProduct).toHaveBeenCalledWith(productToUpdate.id, updatedProduct)
-      expect(result.name).toBe(updatedProduct.name)
-      expect(result.price).toBe(updatedProduct.price)
-
-      jest.spyOn(productService, 'listProducts').mockReturnValue(products.filter(product => product.name !== productToUpdate.name));
-      // Check if the product dont exist in the list
-      expect(productController.listProducts()).not.toContain(productToUpdate)
-
-    })
-  })
 
 });

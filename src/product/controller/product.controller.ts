@@ -2,15 +2,17 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 import { ProductType } from '../types/product.type';
 import { CreateProductDto } from '../dto/createProduct.dto';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('product')
 export class ProductController {
 
   constructor(private readonly productService: ProductService) { }
 
-  products: ProductType[] = []
 
-  @Get('')
+
+  @Get()
   public index() {
     return this.productService.index();
   }
@@ -24,10 +26,10 @@ export class ProductController {
   }
 
   @Post()
-  public createProduct(@Body() createProductDto: CreateProductDto) {
-    console.log(createProductDto);
+  public async createProduct(createProductDto: CreateProductDto) {
     return this.productService.createProduct(createProductDto);
   }
+
 
   public removeProduct(id: number) {
     return this.productService.removeProduct(id)

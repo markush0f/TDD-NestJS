@@ -4,7 +4,7 @@ import { validate, ValidationError } from "class-validator";
 
 
 describe('CreateProductDto', () => {
-    it('should create a new instance with provided values', async () => {
+    it('should create a new instance without errors', async () => {
         const data = {
             id: 1,
             name: "coca-cola",
@@ -14,10 +14,8 @@ describe('CreateProductDto', () => {
         const createProductDto = plainToInstance(CreateProductDto, data);
         const errors = await validate(createProductDto);
         console.log(errors);
-        
-        expect(errors.length).toBe(0)
-        // expect(stringified(errors)).toContain('Should be a valid name')
 
+        expect(errors.length).toBe(0)
     })
 
     it('should return a error for a invalid format name', async () => {
@@ -39,14 +37,18 @@ describe('CreateProductDto', () => {
             price: "Fanta",
             quantity: "Juan"
         }
+
         const errors = [
             'Should be a valid id.',
             'Should be a valid name.',
             'Should be a valid price.',
             'Should be a valid quantity.'
         ]
+
+        
         const createProductDto = plainToInstance(CreateProductDto, data);
         const errorsDto = await validate(createProductDto)
+        console.log(errorsDto);
 
         errors.forEach((error, i) => {
             const constraintsValues = Object.values(errorsDto[i].constraints);
@@ -78,6 +80,7 @@ describe('CreateProductDto', () => {
         expect(error).toEqual("This product with this id already exists.")
     })
 })
+
 export function stringified(errors: ValidationError[]): string {
     return JSON.stringify(errors)
 }
