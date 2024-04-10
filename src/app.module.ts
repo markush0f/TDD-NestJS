@@ -4,12 +4,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './product/entities/product.entitie';
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ProductModule,
     AutomapperModule.forRoot({
       strategyInitializer: classes()
+    }),
+    ConfigModule.forRoot({
+      envFilePath: '../docker.env'
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -19,6 +23,7 @@ import { classes } from '@automapper/classes';
       password: '1234',
       database: 'products',
       entities: [Product],
+      autoLoadEntities: true,
       synchronize: true,
     }),
 

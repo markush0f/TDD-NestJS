@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductController } from './product.controller';
 import { ProductService } from '../services/product.service';
-import { ProductType } from '../types/product.type';
 import { CreateProductDto } from '../dto/createProduct.dto';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from '../entities/product.entitie';
@@ -9,6 +8,7 @@ import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 
 describe('ProductController', () => {
+  
   const products: CreateProductDto[] = [
     {
       id: 1,

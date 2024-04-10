@@ -23,11 +23,11 @@ export class ProductService {
 
     public async listProducts(): Promise<any> {
         try {
-            const product = this.productRepository.find()
-            if (product) {
+            const products = await this.productRepository.find()
+            if (products) {
                 return {
                     'success': true,
-                    'product': product,
+                    'products': products,
                     'status': 200
                 }
             }
@@ -41,6 +41,7 @@ export class ProductService {
         return {
             'success': false
         }
+        // return this.productRepository.find()
     }
 
     public async findProductById(id: number): Promise<any> {
